@@ -1,4 +1,4 @@
-# Sistema de Gestión de Órdenes
+# Sistema 
 
 Sistema web para la gestión de órdenes de trabajo/servicio con panel de administración y generación de reportes.
 
@@ -13,15 +13,15 @@ Sistema web para la gestión de órdenes de trabajo/servicio con panel de admini
 - **Framework**: Laravel
 - **Frontend**: AdminLTE 3 (Plantilla Bootstrap)
 - **Base de Datos**: MySQL
-- **Reportes**: Laravel Excel, DomPDF
+- **Reportes**: Laravel
 - **Autenticación**: Laravel Fortify
 
 ## Instalación Paso a Paso
 
 ### 1. Clonar Repositorio
 ```bash
-git clone https://github.com/tu-usuario/tu-repositorio.git
-cd tu-repositorio
+git clone https://github.com/MiltonDanielhch/cafe.git
+cd cafe
 
 2. Configuración Inicial
 # Instalar dependencias PHP

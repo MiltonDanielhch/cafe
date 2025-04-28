@@ -300,12 +300,12 @@ return [
 
     'menu' => [
         // Navbar items:
-        [
-            'text' => 'Configuración',
-            'url' => 'admin/configuracion',
-            'icon' => 'fas fa-fw fa-gear',
-            'classes' => 'bg-success text-white',
-        ],
+        // [
+        //     'text' => 'Configuración',
+        //     'url' => 'admin/configuracion',
+        //     'icon' => 'fas fa-fw fa-gear',
+        //     'classes' => 'bg-success text-white',
+        // ],
         [
             'text' => 'Usuarios',
             'icon' => 'fas fa-fw fa-users',
