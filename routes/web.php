@@ -33,6 +33,8 @@ Route::middleware([
      // Recursos
      Route::resource('admin/productos', ProductoController::class);
      Route::resource('admin/ordenes', OrdenController::class);
+     Route::get('/productos/stock', [ProductoController::class, 'stock'])->name('productos.stock');
+
      Route::resource('admin/categorias', CategoriaController::class);
     //rutas para usuarios
     Route::resource('/admin/usuarios', UsuarioController::class);
@@ -42,6 +44,7 @@ Route::middleware([
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::post('/reportes/generar', [ReporteController::class, 'generar'])->name('reportes.generar');
     Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar');
+
 
       // Rutas personalizadas
     // Route::post('/ordenes/{orden}/completar', [OrdenController::class, 'completar'])->name('ordenes.completar');

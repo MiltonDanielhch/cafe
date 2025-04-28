@@ -291,4 +291,89 @@
         });
     });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('ordenForm');
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+
+        const clienteId = document.querySelector('select[name="cliente_id"]').value;
+        const notas = document.querySelector('textarea[name="notas"]').value;
+
+        if (!clienteId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cliente requerido',
+                text: 'Seleccione un cliente antes de enviar.'
+            });
+            return;
+        }
+
+        formData.append('cliente_id', clienteId);
+        formData.append('notas', notas);
+
+        // Recolectar productos
+        let productosValidos = 0;
+        document.querySelectorAll('#productosContainer .producto-item').forEach((item, index) => {
+            const id = item.querySelector('select').value;
+            const cantidad = item.querySelector('input[name$="[cantidad]"]').value;
+            const instrucciones = item.querySelector('input[name$="[instrucciones]"]').value || '';
+
+            if (id && cantidad > 0) {
+                formData.append(`productos[${index}][id]`, id);
+                formData.append(`productos[${index}][cantidad]`, cantidad);
+                formData.append(`productos[${index}][instrucciones]`, instrucciones);
+                productosValidos++;
+            }
+        });
+
+        if (productosValidos === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Carrito vacío',
+                text: 'Agrega productos antes de confirmar la orden.'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al crear la orden.');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Orden creada',
+                text: `Orden creada con éxito.`,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '{{ route("ordenes.index") }}';
+            });
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message
+            });
+        }
+    });
+});
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 @stop

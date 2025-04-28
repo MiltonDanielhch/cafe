@@ -15,7 +15,7 @@ class ProductoSeeder extends Seeder
                 'categoria' => 'Bebidas frías',
                 'nombre' => 'Té frío',
                 'precio' => 7.00,
-                'stock' => 0,
+                'stock' => 4,
                 'disponible' => true
             ],
 
@@ -31,7 +31,7 @@ class ProductoSeeder extends Seeder
                 'categoria' => 'Tortas / Dulces',
                 'nombre' => 'Torta de chocolate',
                 'precio' => 15.00,
-                'stock' => 0,
+                'stock' => 5,
                 'disponible' => true
             ],
         ];

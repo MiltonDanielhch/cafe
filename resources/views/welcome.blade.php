@@ -81,104 +81,138 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-            
-            const actualizarCarrito = () => {
-                const carritoItems = document.getElementById('carrito-items');
-                const carritoTotal = document.getElementById('carrito-total');
-                let total = 0;
-                
-                carritoItems.innerHTML = carrito.map((item, index) => {
-                    total += item.precio * item.cantidad;
-                    return `
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div>
-                                <span>${item.nombre} x${item.cantidad}</span>
-                                ${item.stock < item.cantidad ? 
-                                    '<span class="text-danger ml-2">(Stock insuficiente)</span>' : ''}
-                            </div>
-                            <div>
-                                <span>Bs. ${(item.precio * item.cantidad).toFixed(2)}</span>
-                                <button class="btn btn-sm btn-danger ml-2" 
-                                        onclick="eliminarDelCarrito(${index})">
-                                    ×
-                                </button>
-                            </div>
-                        </div>`;
-                }).join('');
-                
-                carritoTotal.textContent = total.toFixed(2);
-                localStorage.setItem('carrito', JSON.stringify(carrito));
-            };
+    // HACEMOS carrito GLOBAL
+    let carrito = [];
 
-            window.eliminarDelCarrito = (index) => {
-                carrito.splice(index, 1);
-                actualizarCarrito();
-            };
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cargamos el carrito de localStorage una sola vez
+        carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
-            document.querySelectorAll('.btn-anadir').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const producto = {
-                        id: btn.dataset.id,
-                        nombre: btn.dataset.nombre,
-                        precio: parseFloat(btn.dataset.precio),
-                        stock: parseInt(btn.dataset.stock),
-                        cantidad: 1
-                    };
+        const carritoItems = document.getElementById('carrito-items');
+        const carritoTotal = document.getElementById('carrito-total');
+        const botonConfirmar = document.getElementById('confirmar-pedido');
 
-                    if(producto.stock <= 0) {
-                        Swal.fire('Error', 'Producto agotado', 'error');
+        const actualizarCarrito = () => {
+            let total = 0;
+            carritoItems.innerHTML = carrito.map((item, index) => {
+                total += item.precio * item.cantidad;
+                return `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span>${item.nombre} x${item.cantidad}</span>
+                            ${item.stock < item.cantidad ? '<span class="text-danger ml-2">(Stock insuficiente)</span>' : ''}
+                        </div>
+                        <div>
+                            <span>Bs. ${(item.precio * item.cantidad).toFixed(2)}</span>
+                            <button class="btn btn-sm btn-danger ml-2" onclick="eliminarDelCarrito(${index})">×</button>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            carritoTotal.textContent = total.toFixed(2);
+            localStorage.setItem('carrito', JSON.stringify(carrito));
+        };
+
+        window.eliminarDelCarrito = (index) => {
+            carrito.splice(index, 1);
+            actualizarCarrito();
+        };
+
+        document.querySelectorAll('.btn-anadir').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const producto = {
+                    id: btn.dataset.id,
+                    nombre: btn.dataset.nombre,
+                    precio: parseFloat(btn.dataset.precio),
+                    stock: parseInt(btn.dataset.stock),
+                    cantidad: 1
+                };
+
+                const itemExistente = carrito.find(item => item.id === producto.id);
+
+                if (producto.stock <= 0) {
+                    Swal.fire('Error', 'Producto agotado', 'error');
+                    return;
+                }
+
+                if (itemExistente) {
+                    if (itemExistente.cantidad >= producto.stock) {
+                        Swal.fire('Error', 'No hay suficiente stock', 'error');
                         return;
                     }
-
-                    const itemExistente = carrito.find(item => item.id === producto.id);
-                    if(itemExistente) {
-                        if(itemExistente.cantidad >= producto.stock) {
-                            Swal.fire('Error', 'No hay suficiente stock', 'error');
-                            return;
-                        }
-                        itemExistente.cantidad++;
-                    } else {
-                        carrito.push(producto);
-                    }
-                    
-                    actualizarCarrito();
-                });
-            });
-
-            document.getElementById('confirmar-pedido').addEventListener('click', async function() {
-                try {
-                    const response = await fetch('{{ route("ordenes.store") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            productos: carrito,
-                            cliente_id: {{ Auth::check() ? Auth::id() : 'null' }}
-                        })
-                    });
-
-                    const data = await response.json();
-                    
-                    if(response.ok) {
-                        Swal.fire('¡Pedido confirmado!', data.message, 'success');
-                        localStorage.removeItem('carrito');
-                        carrito = [];
-                        actualizarCarrito();
-                    } else {
-                        Swal.fire('Error', data.message, 'error');
-                    }
-                } catch (error) {
-                    Swal.fire('Error', error.message, 'error');
+                    itemExistente.cantidad++;
+                } else {
+                    carrito.push(producto);
                 }
-            });
 
-            actualizarCarrito();
+                actualizarCarrito();
+            });
         });
-    </script>
+
+        botonConfirmar.addEventListener('click', async () => {
+            if (carrito.length === 0) {
+                Swal.fire('Carrito Vacío', 'Agrega productos antes de confirmar', 'warning');
+                return;
+            }
+
+            try {
+                botonConfirmar.disabled = true;
+                botonConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+
+                const payload = {
+                    productos: carrito.map(item => ({
+                        id: item.id,
+                        cantidad: item.cantidad
+                    })),
+                    cliente_id: @json(Auth::id())
+                };
+
+                const response = await fetch('{{ route("ordenes.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Pedido Registrado!',
+                    html: `
+                        <p>${data.message}</p>
+                        <div class="mt-3">
+                            <strong>Código:</strong> ${data.codigo}<br>
+                            <strong>Total:</strong> Bs. ${data.total.toFixed(2)}
+                        </div>
+                    `
+                });
+
+                carrito = []; // Vaciamos carrito en memoria
+                localStorage.removeItem('carrito');
+                actualizarCarrito();
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al Procesar',
+                    text: error.message || 'Error en la comunicación con el servidor'
+                });
+            } finally {
+                botonConfirmar.disabled = false;
+                botonConfirmar.textContent = 'Confirmar Pedido';
+            }
+        });
+
+        actualizarCarrito();
+    });
+</script>
+
     
     <!-- Optimizado: Scripts al final del body -->
     <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>

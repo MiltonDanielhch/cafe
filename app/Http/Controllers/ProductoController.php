@@ -27,6 +27,13 @@ class ProductoController extends Controller
         return view('admin.productos.create', compact('categorias'));
     }
     
+    public function stock()
+    {
+        $productos = Producto::select('id', 'stock', 'disponible')->get();
+        return response()->json($productos);
+    }
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([

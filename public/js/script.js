@@ -5,25 +5,25 @@ const estadoPedido = {
 };
 
 // Base de datos de productos
-const productos = [
-    {
-        id: "cafe",
-        nombre: "Café",
-        precio: 10,
-        categoria: "cafes",
-        imagen: "images/a.jpeg",
-        inventario: 10
-    },
-    {
-        id: "te",
-        nombre: "Té",
-        precio: 8,
-        categoria: "cafes",
-        imagen: "images/a.jpeg",
-        inventario: 15
-    },
-    // Añadir todos los productos restantes aquí...
-];
+// const productos = [
+//     {
+//         id: "cafe",
+//         nombre: "Café",
+//         precio: 10,
+//         categoria: "cafes",
+//         imagen: "images/a.jpeg",
+//         inventario: 10
+//     },
+//     {
+//         id: "te",
+//         nombre: "Té",
+//         precio: 8,
+//         categoria: "cafes",
+//         imagen: "images/a.jpeg",
+//         inventario: 15
+//     },
+//     // Añadir todos los productos restantes aquí...
+// ];
 
 // Cargar productos en el DOM
 function cargarProductos() {

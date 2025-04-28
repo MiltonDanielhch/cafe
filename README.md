@@ -30,6 +30,9 @@ composer install
 # Instalar dependencias Node.js
 npm install
 
+npm run dev
+
+npm run build
 # Crear archivo .env
 cp .env.example .env
 

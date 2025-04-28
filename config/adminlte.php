@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'SysCafe',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
+    'logo' => '<b>Sys</b>Cafe',
     'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -310,14 +310,14 @@ return [
             'text' => 'Usuarios',
             'icon' => 'fas fa-fw fa-users',
             'classes' => 'bg-success text-white',
-            'submenu' => [
-                [
-                    'text' => 'listado de usuarios',
-                    'url' => 'admin/usuarios',
-                    'classes' => 'bg-success text-white',
+            'url' => 'admin/usuarios',
+            // 'submenu' => [
+            //     [
+            //         'text' => 'listado de usuarios',
+            //         'classes' => 'bg-success text-white',
 
-                ],
-            ],
+            //     ],
+            // ],
         ],
         // [
         //     'text' => 'Clientes',
@@ -336,40 +336,40 @@ return [
             'text' => 'Categorias',
             'icon' => 'fas fa-fw fa-tags',
             'classes' => 'bg-success text-white',
-            'submenu' => [
-                [
-                    'text' => 'listado de categorias',
-                    'url' => 'admin/categorias',
-                    'classes' => 'bg-success text-white',
+            'url' => 'admin/categorias',
+            // 'submenu' => [
+            //     [
+            //         'text' => 'listado de categorias',
+            //         'classes' => 'bg-success text-white',
 
-                ],
-            ],
+            //     ],
+            // ],
         ],
         [
             'text' => 'Productos',
             'icon' => 'fas fa-fw fa-list',
             'classes' => 'bg-success text-white',
-            'submenu' => [
-                [
-                    'text' => 'listado de productos',
-                    'url' => 'admin/productos',
-                    'classes' => 'bg-success text-black',
+            'url' => 'admin/productos',
+            // 'submenu' => [
+            //     [
+            //         'text' => 'listado de productos',
+            //         'classes' => 'bg-success text-black',
 
-                ],
-            ],
+            //     ],
+            // ],
         ],
         [
             'text' => 'ordenes',
             'icon' => 'fas fa-fw fa-list',
             'classes' => 'bg-success text-white',
-            'submenu' => [
-                [
-                    'text' => 'listado de ordenes',
-                    'url' => 'admin/ordenes',
-                    'classes' => 'bg-success text-black',
+            'url' => 'admin/ordenes',
+            // 'submenu' => [
+            //     [
+            //         'text' => 'listado de ordenes',
+            //         'classes' => 'bg-success text-black',
 
-                ],
-            ],
+            //     ],
+            // ],
         ],
         [
             'text' => 'Reportes',
