@@ -9,9 +9,10 @@
 @section('content')
 <div class="card">
     <div class="card-body">
-        <form action="{{ route('ordenes.store') }}" method="POST" id="ordenForm">
+            <!-- <form action="{{ route('ordenes.store') }}" method="POST" id="ordenForm">
+            @csrf -->
+            <form id="ordenForm" method="POST" action="{{ secure_url('admin/ordenes') }}">
             @csrf
-            
             <!-- Selección de Cliente -->
             <div class="row">
                 <div class="col-md-6">

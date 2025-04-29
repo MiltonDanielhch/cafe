@@ -167,7 +167,14 @@
                     cliente_id: @json(Auth::id())
                 };
 
-                const response = await fetch('{{ route("ordenes.store") }}', {
+                let url = '{{ route("ordenes.store") }}';
+
+                // Forzar HTTPS si la página está cargada en HTTPS
+                if (location.protocol === 'https:' && url.startsWith('http://')) {
+                    url = url.replace('http://', 'https://');
+                }
+
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -175,6 +182,7 @@
                     },
                     body: JSON.stringify(payload)
                 });
+
 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
@@ -211,7 +219,7 @@
 
         actualizarCarrito();
     });
-</script>
+    </script>
 
     
     <!-- Optimizado: Scripts al final del body -->

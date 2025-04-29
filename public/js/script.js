@@ -1,162 +1,202 @@
-// Estado del pedido
-const estadoPedido = {
-    items: [],
-    total: 0
-};
+document.addEventListener('DOMContentLoaded', function() {
+    let itemIndex = 0;
 
-// Base de datos de productos
-// const productos = [
-//     {
-//         id: "cafe",
-//         nombre: "Café",
-//         precio: 10,
-//         categoria: "cafes",
-//         imagen: "images/a.jpeg",
-//         inventario: 10
-//     },
-//     {
-//         id: "te",
-//         nombre: "Té",
-//         precio: 8,
-//         categoria: "cafes",
-//         imagen: "images/a.jpeg",
-//         inventario: 15
-//     },
-//     // Añadir todos los productos restantes aquí...
-// ];
+    // Inicializar Select2
+    $('.select2-cliente').select2({ placeholder: 'Buscar cliente', allowClear: true });
+    $('.select2-producto').select2({ placeholder: 'Buscar producto', allowClear: true });
 
-// Cargar productos en el DOM
-function cargarProductos() {
-    const categorias = [...new Set(productos.map(p => p.categoria))];
-    
-    categorias.forEach(categoria => {
-        const contenedor = document.querySelector(`#${categoria} .productos-container`);
-        const productosCategoria = productos.filter(p => p.categoria === categoria);
-        
-        productosCategoria.forEach(producto => {
-            const card = document.createElement('div');
-            card.className = 'producto-card';
-            card.innerHTML = `
-                <img src="${producto.imagen}" alt="${producto.nombre}" class="producto-imagen">
-                <h3 class="producto-nombre">${producto.nombre}</h3>
-                <p class="producto-precio">Bs. ${producto.precio}</p>
-                <p class="inventario">Disponibles: ${producto.inventario}</p>
-                <button class="btn-anadir" 
-                    data-id="${producto.id}" 
-                    ${producto.inventario === 0 ? 'disabled' : ''}>
-                    ${producto.inventario > 0 ? '+' : 'Agotado'}
-                </button>
-            `;
-            contenedor.appendChild(card);
-        });
+    // Cambia cliente
+    $('.select2-cliente').on('change', function() {
+        const cliente = $(this).find('option:selected').text();
+        document.getElementById('clienteSeleccionado').innerText = cliente;
     });
-}
 
-// Actualizar carrito
-// Optimizado: Mejor estructura y manejo de errores
-document.addEventListener('DOMContentLoaded', () => {
-    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-    
-    window.actualizarCarrito = () => {
-        const carritoItems = document.getElementById('carrito-items');
-        const carritoTotal = document.getElementById('carrito-total');
-        let total = 0;
-        
-        carritoItems.innerHTML = carrito.map((item, index) => {
-            total += item.precio * item.cantidad;
-            return `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <span>${item.nombre} x${item.cantidad}</span>
-                        ${item.stock < item.cantidad ? 
-                            '<span class="text-danger ml-2">(Stock insuficiente)</span>' : ''}
-                    </div>
-                    <div>
-                        <span>Bs. ${(item.precio * item.cantidad).toFixed(2)}</span>
-                        <button class="btn btn-sm btn-danger ml-2" 
-                                onclick="eliminarDelCarrito(${index})">
-                            ×
-                        </button>
-                    </div>
-                </div>`;
-        }).join('');
-        
-        carritoTotal.textContent = total.toFixed(2);
-        localStorage.setItem('carrito', JSON.stringify(carrito));
-    };
+    // Agregar producto
+    document.getElementById('btnAddProducto').addEventListener('click', function() {
+        itemIndex++;
 
-    window.eliminarDelCarrito = (index) => {
-        carrito.splice(index, 1);
-        actualizarCarrito();
-    };
-    const btnConfirmar = document.getElementById('confirmar-pedido');
+        const productoOptions = productos.map(producto => 
+            `<option value="${producto.id}" data-precio="${producto.precio}" data-stock="${producto.stock}">
+                ${producto.nombre} (Stock: ${producto.stock})
+            </option>`).join('');
 
-    // Delegación de eventos para mejor performance
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-anadir')) {
-            const productoId = e.target.dataset.id;
-            const producto = productos.find(p => p.id === productoId);
-            
-            if(producto && producto.inventario > 0) {
-                producto.inventario--;
-                estadoPedido.items.push({
-                    id: producto.id,
-                    nombre: producto.nombre,
-                    precio: producto.precio
-                });
+        const newItem = `
+            <div class="producto-item row mb-3 align-items-center">
+                <div class="col-md-5">
+                    <select name="productos[${itemIndex}][id]" class="form-control select2-producto" required>
+                        <option value="">Seleccionar producto</option>
+                        ${productoOptions}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" 
+                           name="productos[${itemIndex}][cantidad]" 
+                           class="form-control cantidad" 
+                           min="1" 
+                           value="1" 
+                           required>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" 
+                           name="productos[${itemIndex}][instrucciones]" 
+                           class="form-control" 
+                           placeholder="Instrucciones especiales">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger btn-remove">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('productosContainer').insertAdjacentHTML('beforeend', newItem);
+
+        $(`select[name="productos[${itemIndex}][id]"]`).select2({ placeholder: 'Buscar producto', allowClear: true });
+
+        updateRemoveButtons();
+        updateTotal();
+    });
+
+    // Eliminar producto
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove')) {
+            e.target.closest('.producto-item').remove();
+            updateRemoveButtons();
+            updateTotal();
+        }
+    });
+
+    // Actualizar cuando cambia cantidad o producto
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('cantidad')) {
+            validateStock(e.target.closest('.producto-item'));
+            updateTotal();
+        }
+    });
+
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('select2-producto')) {
+            updateTotal();
+        }
+    });
+
+    // Validar stock disponible
+    function validateStock(item) {
+        const select = item.querySelector('.select2-producto');
+        const cantidadInput = item.querySelector('.cantidad');
+
+        if (select && cantidadInput) {
+            const selectedOption = select.options[select.selectedIndex];
+            const stock = parseInt(selectedOption.dataset.stock) || 0;
+            const cantidad = parseInt(cantidadInput.value) || 0;
+
+            if (cantidad > stock) {
+                cantidadInput.classList.add('is-invalid');
+                item.classList.add('border-danger');
                 
-                actualizarCarrito();
-                actualizarInventarioUI(productoId);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stock insuficiente',
+                    text: `Solo hay ${stock} unidades disponibles`
+                });
+            } else {
+                cantidadInput.classList.remove('is-invalid');
+                item.classList.remove('border-danger');
             }
         }
+    }
+
+    // Actualizar total
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll('.producto-item').forEach(item => {
+            const select = item.querySelector('.select2-producto');
+            const cantidadInput = item.querySelector('.cantidad');
+
+            if (select && cantidadInput && select.value) {
+                const selectedOption = select.options[select.selectedIndex];
+                const precio = parseFloat(selectedOption.dataset.precio) || 0;
+                const cantidad = parseInt(cantidadInput.value) || 0;
+
+                total += precio * cantidad;
+            }
+        });
+        document.getElementById('totalOrden').innerText = `Bs. ${total.toFixed(2)}`;
+    }
+
+    // Botones eliminar
+    function updateRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.btn-remove');
+        if (removeButtons.length === 1) {
+            removeButtons[0].disabled = true;
+        } else {
+            removeButtons.forEach(btn => btn.disabled = false);
+        }
+    }
+
+    // Enviar formulario
+    document.getElementById('ordenForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        let isValid = true;
+        document.querySelectorAll('.producto-item').forEach(item => {
+            const select = item.querySelector('.select2-producto');
+            const cantidad = item.querySelector('.cantidad');
+
+            if (!select.value || !cantidad.value) {
+                isValid = false;
+                item.classList.add('border-danger');
+            }
+        });
+
+        if (!isValid) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Campos incompletos',
+                text: 'Debe completar todos los productos y cantidades'
+            });
+            return;
+        }
+
+        let url = this.action;
+        if (url.startsWith('http://')) {
+            url = url.replace('http://', 'https://');
+        }
+
         
-        if (e.target.classList.contains('btn-eliminar')) {
-            const index = e.target.dataset.index;
-            carrito.splice(index, 1);
-            actualizarCarrito();
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al guardar la orden.');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Orden guardada',
+                text: 'La orden se creó exitosamente'
+            }).then(() => {
+                window.location.href = '/admin/ordenes';
+            });
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un problema al guardar la orden.'
+            });
         }
     });
-});
 
-
-
-// Actualizar inventario en UI
-function actualizarInventarioUI(productoId) {
-    const producto = productos.find(p => p.id === productoId);
-    const boton = document.querySelector(`[data-id="${productoId}"]`);
-    
-    if(producto.inventario === 0) {
-        boton.textContent = 'Agotado';
-        boton.disabled = true;
-    }
-    
-    const inventarioElement = boton.previousElementSibling;
-    if(inventarioElement) {
-        inventarioElement.textContent = `Disponibles: ${producto.inventario}`;
-    }
-}
-
-// Confirmar pedido
-document.getElementById('confirmar-pedido').addEventListener('click', () => {
-    const venta = {
-        fecha: new Date().toISOString(),
-        items: [...estadoPedido.items],
-        total: estadoPedido.total
-    };
-    
-    // Guardar en localStorage
-    const historial = JSON.parse(localStorage.getItem('historial') || '[]');
-    historial.push(venta);
-    localStorage.setItem('historial', JSON.stringify(historial));
-    
-    // Resetear estado
-    estadoPedido.items = [];
-    estadoPedido.total = 0;
-    actualizarCarrito();
-    alert('Pedido confirmado! Gracias por su compra.');
-});
-
-// Inicializar
-document.addEventListener('DOMContentLoaded', () => {
-    cargarProductos();
 });

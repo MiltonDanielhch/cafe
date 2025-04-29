@@ -35,6 +35,9 @@ Route::middleware([
      Route::resource('admin/ordenes', OrdenController::class);
      Route::get('/productos/stock', [ProductoController::class, 'stock'])->name('productos.stock');
 
+    //  Route::post('/admin/ordenes', [OrdenController::class, 'store'])->name('admin.ordenes.store');
+
+
      Route::resource('admin/categorias', CategoriaController::class);
     //rutas para usuarios
     Route::resource('/admin/usuarios', UsuarioController::class);
